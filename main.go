@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/labstack/echo/v4"
 )
@@ -15,6 +18,20 @@ type AppConfig struct {
 }
 
 var cfg AppConfig
+
+func generateToken(userID int) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Срок действия — 24 часа
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(cfg.Secret_key)
+}
+
+func validateToken(token string) (bool, error) {
+	return false, nil // TODO: finish it
+}
 
 func main() {
 	err := fillConfig()
