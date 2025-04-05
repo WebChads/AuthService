@@ -3,18 +3,18 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/WebChads/AuthService/internal/services"
 	"net/http"
 	"time"
 
-	"github.com/golang-jwt/jwt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/labstack/echo/v4"
 )
 
 type AppConfig struct {
-	Port       string `json:"port"`
-	Secret_key string `json:"secret_key"`
+	Port      string `json:"port"`
+	SecretKey string `json:"secret_key"`
 }
 
 var cfg AppConfig
@@ -26,7 +26,7 @@ func generateToken(userID int) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(cfg.Secret_key)
+	return token.SignedString(cfg.SecretKey)
 }
 
 func validateToken(token string) (bool, error) {
@@ -40,13 +40,20 @@ func main() {
 		return
 	}
 
+	tokenHandler := services.InitTokenHandler(cfg.SecretKey)
+	testToken, _ := tokenHandler.GenerateToken(1)
+
 	e := echo.New()
 
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Привет, Echo!")
+		return c.String(http.StatusOK, "Example of token: "+testToken)
 	})
 
-	e.Start(":" + cfg.Port)
+	err = e.Start(":" + cfg.Port)
+	if err != nil {
+		fmt.Println(err.Error()) // TODO: Change on logger later
+		return
+	}
 }
 
 func fillConfig() error {
@@ -55,7 +62,7 @@ func fillConfig() error {
 		return err
 	}
 
-	if len(cfg.Port) == 0 || len(cfg.Secret_key) == 0 {
+	if len(cfg.Port) == 0 || len(cfg.SecretKey) == 0 {
 		return errors.New("unsuccess try of reading config")
 	}
 
