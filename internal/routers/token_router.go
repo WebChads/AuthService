@@ -1,7 +1,14 @@
 package routers
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/WebChads/AuthService/internal/services"
+	"github.com/labstack/echo/v4"
+)
 
-func GenerateToken(context echo.Context) error {
+type TokenRouter struct {
+	services services.ServicesScope
+}
+
+func (tokenRouter *TokenRouter) GenerateToken(context echo.Context) error {
 	return nil
 }
