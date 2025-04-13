@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type ITokenHandler interface {
@@ -21,7 +22,7 @@ func InitTokenHandler(secretKey string) (*TokenHandler, error) {
 	return &tokenHandler, nil
 }
 
-func (tokenHandler *TokenHandler) GenerateToken(userID int) (string, error) {
+func (tokenHandler *TokenHandler) GenerateToken(userID uuid.UUID) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Срок действия — 24 часа
