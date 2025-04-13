@@ -3,9 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/WebChads/AuthService/internal/services"
 	"net/http"
 	"time"
+
+	"github.com/WebChads/AuthService/internal/services"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/ilyakaznacheev/cleanenv"
@@ -45,8 +46,15 @@ func main() {
 
 	e := echo.New()
 
+	isTokenValid, _ := tokenHandler.ValidateToken(testToken)
+	var text string
+	if isTokenValid {
+		text = "Valid"
+	} else {
+		text = "Not valid"
+	}
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Example of token: "+testToken)
+		return c.String(http.StatusOK, "Example of token: "+testToken+"\n It is even valid: "+text)
 	})
 
 	err = e.Start(":" + cfg.Port)

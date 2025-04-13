@@ -1,8 +1,10 @@
 package services
 
 import (
-	"github.com/golang-jwt/jwt/v5"
+	"fmt"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type ITokenHandler interface {
@@ -26,9 +28,27 @@ func (tokenHandler *TokenHandler) GenerateToken(userID int) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(tokenHandler.secretKey)
+	signedString, err := token.SignedString([]byte(tokenHandler.secretKey))
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+
+	return signedString, nil
 }
 
 func (tokenHandler *TokenHandler) ValidateToken(token string) (bool, error) {
-	return false, nil // TODO: finish it
+	parseResult, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		return []byte(tokenHandler.secretKey), nil
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	if !parseResult.Valid {
+		return false, nil
+	}
+
+	return true, nil
 }
