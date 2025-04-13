@@ -13,6 +13,7 @@ type TokenRouter struct {
 }
 
 // GenerateToken godoc
+// @Title GenerateToken
 // @Summary Generate a new authentication token
 // @Description Generates a new JWT (or other) token for user authentication
 // @Tags Authentication
@@ -22,7 +23,7 @@ type TokenRouter struct {
 // @Success 200 {object} dtos.GenerateTokenResponse "Successfully generated token"
 // @Failure 400 {string} string "Invalid request data"
 // @Failure 500 {string} string "Internal server error"
-// @Router /api/tokens/generate [post]
+// @Router /api/v1/generate-token [post]
 func (tokenRouter *TokenRouter) GenerateToken(context echo.Context) error {
 	tokenRequest := dtos.GenerateTokenRequest{}
 	context.Bind(&tokenRequest)
