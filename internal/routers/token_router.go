@@ -26,18 +26,20 @@ type TokenRouter struct {
 // @Failure 500 {object} dtos.ErrorDto "Happened internal error"
 // @Router /api/v1/generate-token [post]
 func (tokenRouter *TokenRouter) GenerateToken(context echo.Context) error {
+	logger := tokenRouter.Services.Logger
+
 	tokenRequest := dtos.GenerateTokenRequest{}
 	context.Bind(&tokenRequest)
 
 	parsedUuid, err := uuid.Parse(tokenRequest.UserId)
 	if err != nil {
-		tokenRouter.Services.Logger.Error(err.Error())
+		logger.Error(err.Error())
 		return context.JSON(http.StatusBadRequest, dtos.ErrorDto{ErrorMessage: "Invalid UserId format (must be UUID)"})
 	}
 
 	token, err := tokenRouter.Services.TokenHandler.GenerateToken(parsedUuid)
 	if err != nil {
-		tokenRouter.Services.Logger.Error(err.Error())
+		logger.Error(err.Error())
 		return context.JSON(http.StatusInternalServerError, dtos.ErrorDto{ErrorMessage: "Happened internal error"})
 	}
 
