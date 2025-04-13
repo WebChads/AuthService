@@ -16,9 +16,9 @@ type TokenHandler struct {
 	secretKey string
 }
 
-func InitTokenHandler(secretKey string) *TokenHandler {
+func InitTokenHandler(secretKey string) (*TokenHandler, error) {
 	tokenHandler := TokenHandler{secretKey}
-	return &tokenHandler
+	return &tokenHandler, nil
 }
 
 func (tokenHandler *TokenHandler) GenerateToken(userID int) (string, error) {
