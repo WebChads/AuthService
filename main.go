@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "github.com/WebChads/AuthService/docs"
 	"github.com/WebChads/AuthService/internal/routers"
 	"github.com/WebChads/AuthService/internal/services"
 	"github.com/labstack/echo/v4"
@@ -19,9 +20,6 @@ import (
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host      localhost:8080
-// @BasePath  /api/v1
-
 // @securityDefinitions.basic  BasicAuth
 
 // @externalDocs.description  OpenAPI
@@ -39,11 +37,9 @@ func main() {
 	tokenRouter := routers.TokenRouter{Services: services}
 
 	e.POST("/api/v1/generate-token", tokenRouter.GenerateToken)
+
+	echoSwagger.URL("http://localhost:" + services.Configuration.Port)
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
-	err = e.Start(":" + services.Configuration.Port)
-	if err != nil {
-		services.Logger.Error(err.Error())
-		return
-	}
+	e.Logger.Fatal(e.Start(":" + services.Configuration.Port))
 }

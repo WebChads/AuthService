@@ -1,0 +1,66 @@
+definitions:
+  dtos.ErrorDto:
+    properties:
+      error_message:
+        type: string
+    type: object
+  dtos.GenerateTokenRequest:
+    properties:
+      user_id:
+        type: string
+    type: object
+  dtos.GenerateTokenResponse:
+    properties:
+      token:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /api/v1/generate-token:
+    post:
+      consumes:
+      - application/json
+      description: Generates a new JWT (or other) token for user authentication
+      parameters:
+      - description: Token generation parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.GenerateTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully generated token
+          schema:
+            $ref: '#/definitions/dtos.GenerateTokenResponse'
+        "400":
+          description: Invalid UserId format (must be UUID)
+          schema:
+            $ref: '#/definitions/dtos.ErrorDto'
+        "500":
+          description: Happened internal error
+          schema:
+            $ref: '#/definitions/dtos.ErrorDto'
+      summary: Generate a new authentication token
+      tags:
+      - Authentication
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

@@ -1,0 +1,101 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a sample server celler server.",
+        "title": "Swagger Example API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "paths": {
+        "/api/v1/generate-token": {
+            "post": {
+                "description": "Generates a new JWT (or other) token for user authentication",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Generate a new authentication token",
+                "parameters": [
+                    {
+                        "description": "Token generation parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.GenerateTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully generated token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.GenerateTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid UserId format (must be UUID)",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorDto"
+                        }
+                    },
+                    "500": {
+                        "description": "Happened internal error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorDto"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dtos.ErrorDto": {
+            "type": "object",
+            "properties": {
+                "error_message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.GenerateTokenRequest": {
+            "type": "object",
+            "properties": {
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.GenerateTokenResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic"
+        }
+    },
+    "externalDocs": {
+        "description": "OpenAPI",
+        "url": "https://swagger.io/resources/open-api/"
+    }
+}
