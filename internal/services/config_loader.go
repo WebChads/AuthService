@@ -2,7 +2,9 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -14,12 +16,22 @@ type AppConfig struct {
 }
 
 var cfg AppConfig
+var cachedProjectRootPath string
 
 func InitializeConfig() (*AppConfig, error) {
-	workingDirectory, _ := os.Getwd()
-	path := workingDirectory + "\\configs\\appsettings.json"
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
 
-	err := cleanenv.ReadConfig(path, &cfg)
+	projectRootPath, err := findProjectRoot(workingDirectory)
+	if err != nil {
+		return nil, err
+	}
+
+	path := projectRootPath + "\\configs\\appsettings.json"
+
+	err = cleanenv.ReadConfig(path, &cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -29,4 +41,24 @@ func InitializeConfig() (*AppConfig, error) {
 	}
 
 	return &cfg, nil
+}
+
+func findProjectRoot(startDir string) (string, error) {
+	if cachedProjectRootPath != "" {
+		return cachedProjectRootPath, nil
+	}
+
+	dir := startDir
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			cachedProjectRootPath = dir
+			return dir, nil
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", fmt.Errorf("project root not found")
+		}
+		dir = parent
+	}
 }

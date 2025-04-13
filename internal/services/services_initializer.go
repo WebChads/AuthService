@@ -15,6 +15,8 @@ type ServicesScope struct {
 var services *ServicesScope
 
 func InitializeServicesScope() error {
+	services = &ServicesScope{}
+
 	config, err := InitializeConfig()
 	if err != nil {
 		fmt.Println(err.Error())
