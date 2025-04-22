@@ -10,9 +10,17 @@ import (
 )
 
 type AppConfig struct {
-	Port          string `json:"port"`
-	SecretKey     string `json:"secret_key"`
-	IsDevelopment bool   `json:"is_development"`
+	Port          string         `json:"port"`
+	SecretKey     string         `json:"secret_key"`
+	IsDevelopment bool           `json:"is_development"`
+	DbSettings    DatabaseConfig `json:"database"`
+}
+
+type DatabaseConfig struct {
+	Host     string `json:"host"`
+	DbName   string `json:"db_name"`
+	User     string `json:"user"`
+	Password string `json:"password"`
 }
 
 var cfg AppConfig
@@ -36,7 +44,7 @@ func InitializeConfig() (*AppConfig, error) {
 		return nil, err
 	}
 
-	if len(cfg.Port) == 0 || len(cfg.SecretKey) == 0 {
+	if len(cfg.Port) == 0 || len(cfg.SecretKey) == 0 || cfg.DbSettings.Host == "" || cfg.DbSettings.DbName == "" || cfg.DbSettings.User == "" || cfg.DbSettings.Password == "" {
 		return nil, errors.New("unsuccess try of reading config")
 	}
 
