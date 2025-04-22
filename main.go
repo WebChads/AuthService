@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "github.com/WebChads/AuthService/docs"
+	"github.com/WebChads/AuthService/internal/database"
 	"github.com/WebChads/AuthService/internal/routers"
 	"github.com/WebChads/AuthService/internal/services"
 	"github.com/labstack/echo/v4"
@@ -30,16 +31,22 @@ func main() {
 		return
 	}
 
-	services := services.GetServicesScope()
+	servicesScope := services.GetServicesScope()
+
+	_, err = database.InitDatabase(servicesScope)
+	if err != nil {
+		servicesScope.Logger.Error("Unable to init database: " + err.Error())
+		return
+	}
 
 	e := echo.New()
 
-	tokenRouter := routers.TokenRouter{Services: services}
+	tokenRouter := routers.TokenRouter{Services: servicesScope}
 
 	e.POST("/api/v1/generate-token", tokenRouter.GenerateToken)
 
-	echoSwagger.URL("http://localhost:" + services.Configuration.Port)
+	echoSwagger.URL("http://localhost:" + servicesScope.Configuration.Port)
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
-	e.Logger.Fatal(e.Start(":" + services.Configuration.Port))
+	e.Logger.Fatal(e.Start(":" + servicesScope.Configuration.Port))
 }

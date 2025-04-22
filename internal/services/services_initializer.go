@@ -12,10 +12,10 @@ type ServicesScope struct {
 	Configuration *AppConfig
 }
 
-var services *ServicesScope
+var servicesScope *ServicesScope
 
 func InitializeServicesScope() error {
-	services = &ServicesScope{}
+	servicesScope = &ServicesScope{}
 
 	config, err := InitializeConfig()
 	if err != nil {
@@ -23,28 +23,28 @@ func InitializeServicesScope() error {
 		return err
 	}
 
-	services.Configuration = config
+	servicesScope.Configuration = config
 
-	logger, err := InitLogger(services.Configuration.IsDevelopment)
+	logger, err := InitLogger(servicesScope.Configuration.IsDevelopment)
 
 	if err != nil {
 		fmt.Println(err.Error())
 		return err
 	}
 
-	services.Logger = logger
+	servicesScope.Logger = logger
 
-	tokenHandler, err := InitTokenHandler(services.Configuration.SecretKey)
+	tokenHandler, err := InitTokenHandler(servicesScope.Configuration.SecretKey)
 	if err != nil {
-		services.Logger.Error(err.Error())
+		servicesScope.Logger.Error(err.Error())
 		return err
 	}
 
-	services.TokenHandler = tokenHandler
+	servicesScope.TokenHandler = tokenHandler
 
 	return nil
 }
 
 func GetServicesScope() *ServicesScope {
-	return services
+	return servicesScope
 }
