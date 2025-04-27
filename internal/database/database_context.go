@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/WebChads/AuthService/internal/services"
 	_ "github.com/lib/pq"
@@ -53,24 +52,22 @@ func InitDatabase(servicesScope *services.ServicesScope) (*DatabaseContext, erro
 }
 
 func checkIfDbExists(connection *sql.DB, dbName string) (bool, error) {
-	checkifDbExistsQuery := fmt.Sprintf("SELECT true FROM pg_database WHERE datname = '%s'", dbName)
-	checkifDbExistsQuery = strings.ReplaceAll(checkifDbExistsQuery, "your_database_name", dbName)
+	checkifDbExistsQuery := "SELECT true FROM pg_database WHERE datname = $1"
 
-	res, err := connection.Query(checkifDbExistsQuery)
+	res, err := connection.Query(checkifDbExistsQuery, dbName)
 	if err != nil {
 		return false, err
 	}
 
-	doesDbAlreadyExists := false
-	res.Next()
-	res.Scan(&doesDbAlreadyExists)
+	var exists bool
+	res.Scan(&exists)
 
-	return doesDbAlreadyExists, nil
+	return exists, nil
 }
 
 func createDatabase(connection *sql.DB, dbName string) error {
-	createDbCommand := fmt.Sprintf("CREATE DATABASE %s", dbName)
-	_, err := connection.Exec(createDbCommand)
+	createDbCommand := "CREATE DATABASE $1"
+	_, err := connection.Exec(createDbCommand, dbName)
 	if err != nil {
 		return err
 	}
@@ -79,9 +76,45 @@ func createDatabase(connection *sql.DB, dbName string) error {
 
 func (databaseContext *DatabaseContext) migrateTables() error {
 	if databaseContext.Connection == nil {
-		return errors.New("There are no connection while migration of tables")
+		return errors.New("there are no connection while migration of tables")
 	}
 
+	isUsersExists, err := databaseContext.checkIfTableExists("users")
+	if err != nil {
+		return err
+	}
+
+	if !isUsersExists {
+		err = databaseContext.createTableUsers()
+		if err != nil {
+			return err
+		}
+	}
+
+	err = databaseContext.createIndexOnTableUsers()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (databaseContext *DatabaseContext) checkIfTableExists(tableName string) (bool, error) {
+	sqlQuery := `SELECT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = $1
+    )`
+
+	var exists bool
+	err := databaseContext.Connection.QueryRow(sqlQuery, tableName).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("error checking if table exists: %w", err)
+	}
+
+	return exists, nil
+}
+
+func (databaseContext *DatabaseContext) createTableUsers() error {
 	usersTable := `CREATE TABLE users
     (
         id uuid PRIMARY KEY NOT NULL,
@@ -94,8 +127,12 @@ func (databaseContext *DatabaseContext) migrateTables() error {
 		return err
 	}
 
+	return nil
+}
+
+func (databaseContext *DatabaseContext) createIndexOnTableUsers() error {
 	usersIndex := "CREATE INDEX index_users_phone_number ON users (phone_number)"
-	_, err = databaseContext.Connection.Exec(usersIndex)
+	_, err := databaseContext.Connection.Exec(usersIndex)
 	if err != nil {
 		return err
 	}
