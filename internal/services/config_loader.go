@@ -37,7 +37,7 @@ func InitializeConfig() (*AppConfig, error) {
 		return nil, err
 	}
 
-	path := projectRootPath + "\\configs\\appsettings.json"
+	path := projectRootPath + "/configs/appsettings.json"
 
 	err = cleanenv.ReadConfig(path, &cfg)
 	if err != nil {

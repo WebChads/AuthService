@@ -6,42 +6,41 @@ import (
 	"fmt"
 
 	"github.com/WebChads/AuthService/internal/services"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
 type DatabaseContext struct {
-	Services   *services.ServicesScope
 	Connection *sql.DB
 }
 
-func InitDatabase(servicesScope *services.ServicesScope) (*DatabaseContext, error) {
-	dbSettings := servicesScope.Configuration.DbSettings
-	connectionString := fmt.Sprintf("postgres://%s:%s@%s/postgres?sslmode=disable", dbSettings.User, dbSettings.Password, dbSettings.Host)
+func InitDatabase(databaseConfig *services.DatabaseConfig) (*DatabaseContext, error) {
+	connectionString := fmt.Sprintf("postgres://%s:%s@%s/postgres?sslmode=disable", databaseConfig.User, databaseConfig.Password, databaseConfig.Host)
 
 	connection, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		return nil, err
 	}
 
-	doesDbExists, err := checkIfDbExists(connection, dbSettings.DbName)
+	doesDbExists, err := checkIfDbExists(connection, databaseConfig.DbName)
 	if err != nil {
 		return nil, err
 	}
 
 	if !doesDbExists {
-		err = createDatabase(connection, dbSettings.DbName)
+		err = createDatabase(connection, databaseConfig.DbName)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	connectionString = fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", dbSettings.User, dbSettings.Password, dbSettings.Host, dbSettings.DbName)
+	connectionString = fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", databaseConfig.User, databaseConfig.Password, databaseConfig.Host, databaseConfig.DbName)
 	connection, err = sql.Open("postgres", connectionString)
 	if err != nil {
 		return nil, err
 	}
 
-	databaseContextObject := &DatabaseContext{Services: servicesScope, Connection: connection}
+	databaseContextObject := &DatabaseContext{Connection: connection}
 
 	err = databaseContextObject.migrateTables()
 	if err != nil {
@@ -52,24 +51,23 @@ func InitDatabase(servicesScope *services.ServicesScope) (*DatabaseContext, erro
 }
 
 func checkIfDbExists(connection *sql.DB, dbName string) (bool, error) {
-	checkifDbExistsQuery := "SELECT true FROM pg_database WHERE datname = $1"
-
-	res, err := connection.Query(checkifDbExistsQuery, dbName)
-	if err != nil {
-		return false, err
-	}
-
 	var exists bool
-	res.Scan(&exists)
+	query := "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = $1)"
+
+	err := connection.QueryRow(query, dbName).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("query failed: %w", err)
+	}
 
 	return exists, nil
 }
 
 func createDatabase(connection *sql.DB, dbName string) error {
-	createDbCommand := "CREATE DATABASE $1"
-	_, err := connection.Exec(createDbCommand, dbName)
+	// Важно: экранируем имя БД для безопасности
+	createDbCommand := fmt.Sprintf("CREATE DATABASE %s", pq.QuoteIdentifier(dbName))
+	_, err := connection.Exec(createDbCommand)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create database: %w", err)
 	}
 	return nil
 }

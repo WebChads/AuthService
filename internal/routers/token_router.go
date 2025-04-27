@@ -7,10 +7,12 @@ import (
 	"github.com/WebChads/AuthService/internal/services"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 )
 
 type TokenRouter struct {
-	Services *services.ServicesScope
+	Logger       *zap.Logger
+	TokenHandler *services.TokenHandler
 }
 
 // GenerateToken godoc
@@ -26,22 +28,25 @@ type TokenRouter struct {
 // @Failure 500 {object} dtos.ErrorDto "Happened internal error"
 // @Router /api/v1/generate-token [post]
 func (tokenRouter *TokenRouter) GenerateToken(context echo.Context) error {
-	logger := tokenRouter.Services.Logger
-
 	tokenRequest := dtos.GenerateTokenRequest{}
 	context.Bind(&tokenRequest)
 
 	parsedUuid, err := uuid.Parse(tokenRequest.UserId)
 	if err != nil {
-		logger.Error(err.Error())
+		tokenRouter.Logger.Error(err.Error())
 		return context.JSON(http.StatusBadRequest, dtos.ErrorDto{ErrorMessage: "Invalid UserId format (must be UUID)"})
 	}
 
-	token, err := tokenRouter.Services.TokenHandler.GenerateToken(parsedUuid)
+	token, err := tokenRouter.TokenHandler.GenerateToken(parsedUuid)
 	if err != nil {
-		logger.Error(err.Error())
+		tokenRouter.Logger.Error(err.Error())
 		return context.JSON(http.StatusInternalServerError, dtos.ErrorDto{ErrorMessage: "Happened internal error"})
 	}
 
 	return context.JSON(200, dtos.GenerateTokenResponse{Token: token})
+}
+
+func NewTokenRouter(logger *zap.Logger, tokenHandler *services.TokenHandler) *TokenRouter {
+	tokenRouter := &TokenRouter{Logger: logger, TokenHandler: tokenHandler}
+	return tokenRouter
 }

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	_ "github.com/WebChads/AuthService/docs"
 	"github.com/WebChads/AuthService/internal/database"
 	"github.com/WebChads/AuthService/internal/routers"
@@ -26,27 +28,36 @@ import (
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
 func main() {
-	err := services.InitializeServicesScope()
+	config, err := services.InitializeConfig()
 	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	logger, err := services.InitLogger(config.IsDevelopment)
+	if err != nil {
+		fmt.Println(err.Error())
 		return
 	}
 
-	servicesScope := services.GetServicesScope()
-
-	_, err = database.InitDatabase(servicesScope)
+	tokenHandler, err := services.InitTokenHandler(config.SecretKey)
 	if err != nil {
-		servicesScope.Logger.Error("Unable to init database: " + err.Error())
+		logger.Error(err.Error())
+		return
+	}
+
+	_, err = database.InitDatabase(&config.DbSettings)
+	if err != nil {
+		logger.Error("Unable to init database: " + err.Error())
 		return
 	}
 
 	e := echo.New()
 
-	tokenRouter := routers.TokenRouter{Services: servicesScope}
-
+	tokenRouter := routers.NewTokenRouter(logger, tokenHandler)
 	e.POST("/api/v1/generate-token", tokenRouter.GenerateToken)
 
-	echoSwagger.URL("http://localhost:" + servicesScope.Configuration.Port)
+	echoSwagger.URL("http://localhost:" + config.Port)
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
-	e.Logger.Fatal(e.Start(":" + servicesScope.Configuration.Port))
+	e.Logger.Fatal(e.Start(":" + config.Port))
 }
