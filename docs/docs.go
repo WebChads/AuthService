@@ -24,7 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/generate-token": {
+        "/api/v1/auth/generate-token": {
             "post": {
                 "description": "Generates a new JWT (or other) token for user authentication",
                 "consumes": [
@@ -69,6 +69,48 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/auth/register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Create user entity in database, making him ready to log in",
+                "parameters": [
+                    {
+                        "description": "Register parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully created user in db"
+                    },
+                    "400": {
+                        "description": "Invalid role",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorDto"
+                        }
+                    },
+                    "500": {
+                        "description": "Happened internal error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorDto"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -92,6 +134,17 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.RegisterRequest": {
+            "type": "object",
+            "properties": {
+                "phone_number": {
+                    "type": "string"
+                },
+                "role": {
                     "type": "string"
                 }
             }

@@ -53,8 +53,9 @@ func main() {
 
 	e := echo.New()
 
-	tokenRouter := routers.NewTokenRouter(logger, tokenHandler)
-	e.POST("/api/v1/generate-token", tokenRouter.GenerateToken)
+	authRouter := routers.NewAuthRouter(logger, tokenHandler)
+	e.POST("/api/v1/auth/generate-token", authRouter.GenerateToken)
+	e.POST("/api/v1/auth/register", authRouter.Register)
 
 	echoSwagger.URL("http://localhost:" + config.Port)
 	e.GET("/swagger/*", echoSwagger.WrapHandler)

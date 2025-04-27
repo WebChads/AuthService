@@ -63,7 +63,6 @@ func checkIfDbExists(connection *sql.DB, dbName string) (bool, error) {
 }
 
 func createDatabase(connection *sql.DB, dbName string) error {
-	// Важно: экранируем имя БД для безопасности
 	createDbCommand := fmt.Sprintf("CREATE DATABASE %s", pq.QuoteIdentifier(dbName))
 	_, err := connection.Exec(createDbCommand)
 	if err != nil {
@@ -129,11 +128,37 @@ func (databaseContext *DatabaseContext) createTableUsers() error {
 }
 
 func (databaseContext *DatabaseContext) createIndexOnTableUsers() error {
+	exists, err := databaseContext.checkIfIndexExists("index_users_phone_number")
+	if err != nil {
+		return fmt.Errorf("failed to check index existence: %w", err)
+	}
+
+	if exists {
+		return nil
+	}
+
 	usersIndex := "CREATE INDEX index_users_phone_number ON users (phone_number)"
-	_, err := databaseContext.Connection.Exec(usersIndex)
+	_, err = databaseContext.Connection.Exec(usersIndex)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (databaseContext *DatabaseContext) checkIfIndexExists(indexName string) (bool, error) {
+	query := `
+        SELECT EXISTS (
+            SELECT 1 FROM pg_indexes 
+            WHERE indexname = $1 
+            AND tablename = 'users'
+        )`
+
+	var exists bool
+	err := databaseContext.Connection.QueryRow(query, indexName).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check index existence: %w", err)
+	}
+
+	return exists, nil
 }
