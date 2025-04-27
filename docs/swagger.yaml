@@ -21,20 +21,10 @@ definitions:
       role:
         type: string
     type: object
-externalDocs:
-  description: OpenAPI
-  url: https://swagger.io/resources/open-api/
 info:
-  contact:
-    email: support@swagger.io
-    name: API Support
-    url: http://www.swagger.io/support
-  description: This is a sample server celler server.
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
-  title: Swagger Example API
+  contact: {}
+  description: Service for handling auth, tokens and that stuff
+  title: AuthService API
   version: "1.0"
 paths:
   /api/v1/auth/generate-token:
@@ -95,6 +85,8 @@ paths:
       tags:
       - Authentication
 securityDefinitions:
-  BasicAuth:
-    type: basic
+  JwtBearer:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
