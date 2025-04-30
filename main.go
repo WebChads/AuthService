@@ -5,6 +5,7 @@ import (
 
 	_ "github.com/WebChads/AuthService/docs"
 	"github.com/WebChads/AuthService/internal/database"
+	"github.com/WebChads/AuthService/internal/database/repositories"
 	"github.com/WebChads/AuthService/internal/routers"
 	"github.com/WebChads/AuthService/internal/services"
 	"github.com/labstack/echo/v4"
@@ -36,15 +37,17 @@ func main() {
 		return
 	}
 
-	_, err = database.InitDatabase(&config.DbSettings)
+	dbContext, err := database.InitDatabase(&config.DbSettings)
 	if err != nil {
 		logger.Error("Unable to init database: " + err.Error())
 		return
 	}
 
+	userRepository := repositories.NewUserRepository(dbContext.Connection)
+
 	e := echo.New()
 
-	authRouter := routers.NewAuthRouter(logger, tokenHandler)
+	authRouter := routers.NewAuthRouter(logger, tokenHandler, userRepository)
 	e.POST("/api/v1/auth/generate-token", authRouter.GenerateToken)
 	e.POST("/api/v1/auth/register", authRouter.Register)
 

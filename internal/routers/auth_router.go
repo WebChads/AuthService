@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"slices"
 
+	"github.com/WebChads/AuthService/internal/database/repositories"
 	"github.com/WebChads/AuthService/internal/models/dtos"
 	"github.com/WebChads/AuthService/internal/services"
 	"github.com/google/uuid"
@@ -14,12 +15,13 @@ import (
 )
 
 type AuthRouter struct {
-	Logger       *zap.Logger
-	TokenHandler *services.TokenHandler
+	Logger         *zap.Logger
+	TokenHandler   services.TokenHandler
+	UserRepository repositories.UserRepository
 }
 
-func NewAuthRouter(logger *zap.Logger, tokenHandler *services.TokenHandler) *AuthRouter {
-	authRouter := &AuthRouter{Logger: logger, TokenHandler: tokenHandler}
+func NewAuthRouter(logger *zap.Logger, tokenHandler services.TokenHandler, userRepository repositories.UserRepository) *AuthRouter {
+	authRouter := &AuthRouter{Logger: logger, TokenHandler: tokenHandler, UserRepository: userRepository}
 	return authRouter
 }
 

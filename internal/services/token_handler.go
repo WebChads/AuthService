@@ -8,21 +8,21 @@ import (
 	"github.com/google/uuid"
 )
 
-type ITokenHandler interface {
-	GenerateToken(userID int) (string, error)
+type TokenHandler interface {
+	GenerateToken(userID uuid.UUID) (string, error)
 	ValidateToken(token string) (bool, error)
 }
 
-type TokenHandler struct {
+type JwtTokenHandler struct {
 	secretKey string
 }
 
-func InitTokenHandler(secretKey string) (*TokenHandler, error) {
-	tokenHandler := TokenHandler{secretKey}
+func InitTokenHandler(secretKey string) (*JwtTokenHandler, error) {
+	tokenHandler := JwtTokenHandler{secretKey}
 	return &tokenHandler, nil
 }
 
-func (tokenHandler *TokenHandler) GenerateToken(userID uuid.UUID) (string, error) {
+func (tokenHandler *JwtTokenHandler) GenerateToken(userID uuid.UUID) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Срок действия — 24 часа
@@ -38,7 +38,7 @@ func (tokenHandler *TokenHandler) GenerateToken(userID uuid.UUID) (string, error
 	return signedString, nil
 }
 
-func (tokenHandler *TokenHandler) ValidateToken(token string) (bool, error) {
+func (tokenHandler *JwtTokenHandler) ValidateToken(token string) (bool, error) {
 	parseResult, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		return []byte(tokenHandler.secretKey), nil
 	})

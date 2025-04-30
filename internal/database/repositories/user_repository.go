@@ -9,10 +9,12 @@ import (
 )
 
 type UserRepository interface {
-	AddNewUser(user *entities.User) error
+	Add(user *entities.User) error
 
 	// If user does not exists - returns nil, nil
-	GetUserByPhoneNumber(phoneNumber string) (*entities.User, error)
+	Get(phoneNumber string) (*entities.User, error)
+
+	Count(phoneNumber string) (int, error)
 }
 
 // Implementation of UserRepository for database/sql + PostgreSQL
@@ -20,8 +22,12 @@ type PgUserRepository struct {
 	connection *sql.DB
 }
 
-func (repository *PgUserRepository) AddNewUser(user *entities.User) error {
-	amountOfUsersWithThisPhoneNumber, err := repository.getCountOfUserWithThatPhoneNumber(user.PhoneNumber)
+func NewUserRepository(connection *sql.DB) UserRepository {
+	return &PgUserRepository{connection: connection}
+}
+
+func (repository *PgUserRepository) Add(user *entities.User) error {
+	amountOfUsersWithThisPhoneNumber, err := repository.Count(user.PhoneNumber)
 	if err != nil {
 		return fmt.Errorf("while adding new user happened error: %w", err)
 	}
@@ -36,8 +42,8 @@ func (repository *PgUserRepository) AddNewUser(user *entities.User) error {
 	return err
 }
 
-func (repository *PgUserRepository) GetUserByPhoneNumber(phoneNumber string) (*entities.User, error) {
-	countUsers, err := repository.getCountOfUserWithThatPhoneNumber(phoneNumber)
+func (repository *PgUserRepository) Get(phoneNumber string) (*entities.User, error) {
+	countUsers, err := repository.Count(phoneNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +64,7 @@ func (repository *PgUserRepository) GetUserByPhoneNumber(phoneNumber string) (*e
 	return user, nil
 }
 
-func (repository *PgUserRepository) getCountOfUserWithThatPhoneNumber(phoneNumber string) (int, error) {
+func (repository *PgUserRepository) Count(phoneNumber string) (int, error) {
 	countQuery := "SELECT COUNT(*) FROM users WHERE phone_number = $1"
 
 	var amountOfUsersWithThisPhoneNumber int
