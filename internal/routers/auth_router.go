@@ -8,6 +8,7 @@ import (
 
 	"github.com/WebChads/AuthService/internal/database/repositories"
 	"github.com/WebChads/AuthService/internal/models/dtos"
+	"github.com/WebChads/AuthService/internal/models/entities"
 	"github.com/WebChads/AuthService/internal/services"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -71,26 +72,25 @@ func (authRouter *AuthRouter) GenerateToken(context echo.Context) error {
 // @Failure 500 {object} dtos.ErrorDto "Happened internal error"
 // @Router /api/v1/auth/register [post]
 func (authRouter *AuthRouter) Register(context echo.Context) error {
-	registerRequest := dtos.RegisterRequest{}
-	context.Bind(&registerRequest)
+	request := dtos.RegisterRequest{}
+	context.Bind(&request)
 
 	phoneNumberRegex := `^(8|\+7)(\s|\(|-)?(\d{3})(\s|\)|-)?(\d{3})(\s|-)?(\d{2})(\s|-)?(\d{2})$`
-	isPhoneNumberCorrect, err := regexp.MatchString(phoneNumberRegex, registerRequest.PhoneNumber)
+	isPhoneNumberCorrect, err := regexp.MatchString(phoneNumberRegex, request.PhoneNumber)
 	if err != nil || !isPhoneNumberCorrect {
-		authRouter.Logger.Error(fmt.Errorf("user sent invalid phone number: %s", registerRequest.PhoneNumber).Error())
+		authRouter.Logger.Error(fmt.Errorf("user sent invalid phone number: %s", request.PhoneNumber).Error())
 		return context.JSON(http.StatusBadRequest, dtos.ErrorDto{ErrorMessage: "Invalid phone number"})
 	}
 
-	if !slices.Contains(possibleRoles, registerRequest.Role) {
-		authRouter.Logger.Error(fmt.Errorf("user sent invalid role: %s", registerRequest.Role).Error())
+	if !slices.Contains(possibleRoles, request.Role) {
+		authRouter.Logger.Error(fmt.Errorf("user sent invalid role: %s", request.Role).Error())
 		return context.JSON(http.StatusBadRequest, dtos.ErrorDto{ErrorMessage: "Invalid role"})
 	}
 
-	// token, err := authRouter.TokenHandler.GenerateToken(parsedUuid)
-	// if err != nil {
-	// 	authRouter.Logger.Error(err.Error())
-	// 	return context.JSON(http.StatusInternalServerError, dtos.ErrorDto{ErrorMessage: "Happened internal error"})
-	// }
+	err = authRouter.UserRepository.Add(&entities.User{Id: uuid.New(), PhoneNumber: request.PhoneNumber, UserRole: request.Role})
+	if err != nil {
+		return context.JSON(400, dtos.ErrorDto{ErrorMessage: fmt.Errorf("while adding user in db happened error: %w", err).Error()})
+	}
 
 	return context.NoContent(200)
 }
