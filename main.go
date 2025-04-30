@@ -50,6 +50,7 @@ func main() {
 	authRouter := routers.NewAuthRouter(logger, tokenHandler, userRepository)
 	e.POST("/api/v1/auth/generate-token", authRouter.GenerateToken)
 	e.POST("/api/v1/auth/register", authRouter.Register)
+	e.POST("/api/v1/auth/send-sms-code", authRouter.SendSmsCode)
 
 	echoSwagger.URL("http://localhost:" + config.Port)
 	e.GET("/swagger/*", echoSwagger.WrapHandler)

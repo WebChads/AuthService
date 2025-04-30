@@ -4,6 +4,6 @@ type GenerateTokenRequest struct {
 	UserId string `json:"user_id"`
 }
 
-type GenerateTokenResponse struct {
+type TokenResponse struct {
 	Token string `json:"token"`
 }

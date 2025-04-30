@@ -43,7 +43,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully generated token",
                         "schema": {
-                            "$ref": "#/definitions/dtos.GenerateTokenResponse"
+                            "$ref": "#/definitions/dtos.TokenResponse"
                         }
                     },
                     "400": {
@@ -102,6 +102,48 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/auth/send-sms-code": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Sending sms-code to user to phone number he entered",
+                "parameters": [
+                    {
+                        "description": "Dto with phone number",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.SendSmsCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully sent code"
+                    },
+                    "400": {
+                        "description": "Invalid phone number",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorDto"
+                        }
+                    },
+                    "500": {
+                        "description": "Happened internal error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorDto"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -121,14 +163,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dtos.GenerateTokenResponse": {
-            "type": "object",
-            "properties": {
-                "token": {
-                    "type": "string"
-                }
-            }
-        },
         "dtos.RegisterRequest": {
             "type": "object",
             "properties": {
@@ -136,6 +170,22 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.SendSmsCodeRequest": {
+            "type": "object",
+            "properties": {
+                "phone_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
                     "type": "string"
                 }
             }

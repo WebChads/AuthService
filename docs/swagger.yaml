@@ -9,16 +9,21 @@ definitions:
       user_id:
         type: string
     type: object
-  dtos.GenerateTokenResponse:
-    properties:
-      token:
-        type: string
-    type: object
   dtos.RegisterRequest:
     properties:
       phone_number:
         type: string
       role:
+        type: string
+    type: object
+  dtos.SendSmsCodeRequest:
+    properties:
+      phone_number:
+        type: string
+    type: object
+  dtos.TokenResponse:
+    properties:
+      token:
         type: string
     type: object
 info:
@@ -45,7 +50,7 @@ paths:
         "200":
           description: Successfully generated token
           schema:
-            $ref: '#/definitions/dtos.GenerateTokenResponse'
+            $ref: '#/definitions/dtos.TokenResponse'
         "400":
           description: Invalid UserId format (must be UUID)
           schema:
@@ -82,6 +87,33 @@ paths:
           schema:
             $ref: '#/definitions/dtos.ErrorDto'
       summary: Create user entity in database, making him ready to log in
+      tags:
+      - Authentication
+  /api/v1/auth/send-sms-code:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dto with phone number
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.SendSmsCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully sent code
+        "400":
+          description: Invalid phone number
+          schema:
+            $ref: '#/definitions/dtos.ErrorDto'
+        "500":
+          description: Happened internal error
+          schema:
+            $ref: '#/definitions/dtos.ErrorDto'
+      summary: Sending sms-code to user to phone number he entered
       tags:
       - Authentication
 securityDefinitions:

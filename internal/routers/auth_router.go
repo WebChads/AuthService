@@ -36,7 +36,7 @@ var possibleRoles = []string{"Player", "Trainer"}
 // @Accept json
 // @Produce json
 // @Param request body dtos.GenerateTokenRequest true "Token generation parameters"
-// @Success 200 {object} dtos.GenerateTokenResponse "Successfully generated token"
+// @Success 200 {object} dtos.TokenResponse "Successfully generated token"
 // @Failure 400 {object} dtos.ErrorDto "Invalid UserId format (must be UUID)"
 // @Failure 500 {object} dtos.ErrorDto "Happened internal error"
 // @Router /api/v1/auth/generate-token [post]
@@ -56,7 +56,7 @@ func (authRouter *AuthRouter) GenerateToken(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, dtos.ErrorDto{ErrorMessage: "Happened internal error"})
 	}
 
-	return context.JSON(200, dtos.GenerateTokenResponse{Token: token})
+	return context.JSON(200, dtos.TokenResponse{Token: token})
 }
 
 // Register godoc
@@ -90,6 +90,31 @@ func (authRouter *AuthRouter) Register(context echo.Context) error {
 	err = authRouter.UserRepository.Add(&entities.User{Id: uuid.New(), PhoneNumber: request.PhoneNumber, UserRole: request.Role})
 	if err != nil {
 		return context.JSON(400, dtos.ErrorDto{ErrorMessage: fmt.Errorf("while adding user in db happened error: %w", err).Error()})
+	}
+
+	return context.NoContent(200)
+}
+
+// SendSmsCode godoc
+// @Title SendSmsCode
+// @Summary Sending sms-code to user to phone number he entered
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param request body dtos.SendSmsCodeRequest true "Dto with phone number"
+// @Success 200 "Successfully sent code"
+// @Failure 400 {object} dtos.ErrorDto "Invalid phone number"
+// @Failure 500 {object} dtos.ErrorDto "Happened internal error"
+// @Router /api/v1/auth/send-sms-code [post]
+func (authRouter *AuthRouter) SendSmsCode(context echo.Context) error {
+	request := dtos.SendSmsCodeRequest{}
+	context.Bind(&request)
+
+	phoneNumberRegex := `^(8|\+7)(\s|\(|-)?(\d{3})(\s|\)|-)?(\d{3})(\s|-)?(\d{2})(\s|-)?(\d{2})$`
+	isPhoneNumberCorrect, err := regexp.MatchString(phoneNumberRegex, request.PhoneNumber)
+	if err != nil || !isPhoneNumberCorrect {
+		authRouter.Logger.Error(fmt.Errorf("user sent invalid phone number: %s", request.PhoneNumber).Error())
+		return context.JSON(http.StatusBadRequest, dtos.ErrorDto{ErrorMessage: "Invalid phone number"})
 	}
 
 	return context.NoContent(200)
