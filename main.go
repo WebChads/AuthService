@@ -8,6 +8,7 @@ import (
 	"github.com/WebChads/AuthService/internal/database/repositories"
 	"github.com/WebChads/AuthService/internal/routers"
 	"github.com/WebChads/AuthService/internal/services"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/labstack/echo/v4"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
@@ -45,9 +46,15 @@ func main() {
 
 	userRepository := repositories.NewUserRepository(dbContext.Connection)
 
+	kafkaProducer, err := services.InitKafkaProducer(config.KafkaConfig)
+	if err != nil {
+		logger.Error("Unable to init kafka: " + err.Error())
+		return
+	}
+
 	e := echo.New()
 
-	authRouter := routers.NewAuthRouter(logger, tokenHandler, userRepository)
+	authRouter := routers.NewAuthRouter(logger, tokenHandler, userRepository, kafkaProducer)
 	e.POST("/api/v1/auth/generate-token", authRouter.GenerateToken)
 	e.POST("/api/v1/auth/register", authRouter.Register)
 	e.POST("/api/v1/auth/send-sms-code", authRouter.SendSmsCode)
@@ -56,4 +63,20 @@ func main() {
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	e.Logger.Fatal(e.Start(":" + config.Port))
+}
+
+func init() {
+	producer, err := kafka.NewProducer(&kafka.ConfigMap{
+		"bootstrap.servers": "pkc-12345.confluent.cloud:9092",
+		"security.protocol": "SASL_SSL",
+		"sasl.mechanism":    "PLAIN",
+		"sasl.username":     "API_KEY",
+		"sasl.password":     "API_SECRET",
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer producer.Close()
 }

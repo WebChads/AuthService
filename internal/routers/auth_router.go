@@ -19,10 +19,11 @@ type AuthRouter struct {
 	Logger         *zap.Logger
 	TokenHandler   services.TokenHandler
 	UserRepository repositories.UserRepository
+	KafkaProducer  services.KafkaProducer
 }
 
-func NewAuthRouter(logger *zap.Logger, tokenHandler services.TokenHandler, userRepository repositories.UserRepository) *AuthRouter {
-	authRouter := &AuthRouter{Logger: logger, TokenHandler: tokenHandler, UserRepository: userRepository}
+func NewAuthRouter(logger *zap.Logger, tokenHandler services.TokenHandler, userRepository repositories.UserRepository, kafkaProducer services.KafkaProducer) *AuthRouter {
+	authRouter := &AuthRouter{Logger: logger, TokenHandler: tokenHandler, UserRepository: userRepository, KafkaProducer: kafkaProducer}
 	return authRouter
 }
 
