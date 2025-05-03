@@ -10,7 +10,7 @@ import (
 )
 
 type KafkaConsumer interface {
-	Start() error
+	Start()
 	GetSmsCode(phoneNumber string) (string, bool)
 }
 
@@ -30,14 +30,14 @@ type SmsCodeMessage struct {
 
 var consumerTopicName = "smstoauth"
 
-func (kafkaConsumer *confluentKafkaConsumer) Start() error {
+func (kafkaConsumer *confluentKafkaConsumer) Start() {
 	if kafkaConsumer.isStarted {
-		return errors.New("kafka consumer was already started")
+		panic("kafka consumer was already started")
 	}
 
 	err := kafkaConsumer.kafkaConsumer.Subscribe(consumerTopicName, nil)
 	if err != nil {
-		return errors.New("while subscribing to topic happened error: " + err.Error())
+		panic("while subscribing to topic happened error: " + err.Error())
 	}
 
 	kafkaConsumer.isStarted = true
@@ -50,8 +50,14 @@ func (kafkaConsumer *confluentKafkaConsumer) Start() error {
 		}
 
 		var codeMessage SmsCodeMessage
-		if err := json.Unmarshal(message.Value, &codeMessage); err != nil {
-			kafkaConsumer.logger.Error("while unmarshalling message in listener happened error: " + err.Error())
+		err = json.Unmarshal(message.Value, &codeMessage)
+		if err != nil || codeMessage.PhoneNumber == "" || codeMessage.SmsCode == "" {
+			if err != nil {
+				kafkaConsumer.logger.Error("while unmarshalling message in listener happened error: " + err.Error())
+			} else {
+				kafkaConsumer.logger.Error("while unmarshalling message in listener happened error: fields of dto remained empty somehow")
+			}
+
 			continue
 		}
 
@@ -73,7 +79,10 @@ var singletoneKafkaConsumer = &confluentKafkaConsumer{}
 
 func InitKafkaConsumer(config KafkaConfig, logger *zap.Logger) (KafkaConsumer, error) {
 	if singletoneKafkaConsumer.kafkaConsumer == nil {
-		consumer, err := kafka.NewConsumer(&kafka.ConfigMap{"bootstrap.servers": config.Url})
+		consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
+			"bootstrap.servers": config.Url,
+			"group.id":          "sms-to-auth-listener",
+			"auto.offset.reset": "earliest"})
 
 		if err != nil {
 			return nil, errors.New("while initing kafka consumer happened error: " + err.Error())

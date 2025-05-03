@@ -51,9 +51,15 @@ func main() {
 		return
 	}
 
+	kafkaConsumer, err := services.InitKafkaConsumer(config.KafkaConfig, logger)
+	if err != nil {
+		panic("while initing kafka consumer happened error: " + err.Error())
+	}
+	go kafkaConsumer.Start()
+
 	e := echo.New()
 
-	authRouter := routers.NewAuthRouter(logger, tokenHandler, userRepository, kafkaProducer)
+	authRouter := routers.NewAuthRouter(logger, tokenHandler, userRepository, kafkaProducer, kafkaConsumer)
 	e.POST("/api/v1/auth/generate-token", authRouter.GenerateToken)
 	e.POST("/api/v1/auth/register", authRouter.Register)
 	e.POST("/api/v1/auth/send-sms-code", authRouter.SendSmsCode)
@@ -62,8 +68,4 @@ func main() {
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	e.Logger.Fatal(e.Start(":" + config.Port))
-}
-
-func init() {
-	fmt.Println("Later in init will be Kafka Consumer")
 }
