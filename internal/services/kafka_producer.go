@@ -19,7 +19,7 @@ type phoneNumberRequestDto struct {
 	PhoneNumber string `json:"phone_number"`
 }
 
-var topicName string = "authtosms"
+var producerTopicName string = "authtosms"
 var singletoneKafkaProducer *confluentKafkaProducer = &confluentKafkaProducer{}
 
 func (kafkaProducer *confluentKafkaProducer) SendPhoneNumber(phoneNumber string) error {
@@ -31,7 +31,7 @@ func (kafkaProducer *confluentKafkaProducer) SendPhoneNumber(phoneNumber string)
 	}
 
 	message := &kafka.Message{
-		TopicPartition: kafka.TopicPartition{Topic: &topicName, Partition: kafka.PartitionAny},
+		TopicPartition: kafka.TopicPartition{Topic: &producerTopicName, Partition: kafka.PartitionAny},
 		Value:          encodedMessage,
 	}
 
