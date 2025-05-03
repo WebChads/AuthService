@@ -12,7 +12,7 @@ func InitLogger(isDevelopment bool) (*zap.Logger, error) {
 	var err error
 
 	if globalLogger != nil {
-		return nil, errors.New("Logger already initialized")
+		return nil, errors.New("logger already initialized")
 	}
 
 	if isDevelopment {
