@@ -118,5 +118,10 @@ func (authRouter *AuthRouter) SendSmsCode(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, dtos.ErrorDto{ErrorMessage: "Invalid phone number"})
 	}
 
+	err = authRouter.KafkaProducer.SendPhoneNumber(request.PhoneNumber)
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, dtos.ErrorDto{ErrorMessage: "Happened error while sending sms to this phone number"})
+	}
+
 	return context.NoContent(200)
 }

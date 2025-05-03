@@ -14,7 +14,7 @@ type AppConfig struct {
 	SecretKey     string         `json:"secret_key"`
 	IsDevelopment bool           `json:"is_development"`
 	DbSettings    DatabaseConfig `json:"database"`
-	KafkaConfig   KafkaConfig
+	KafkaConfig   KafkaConfig    `json:"kafka"`
 }
 
 type DatabaseConfig struct {
@@ -25,6 +25,7 @@ type DatabaseConfig struct {
 }
 
 type KafkaConfig struct {
+	Url string `json:"url"`
 }
 
 var cfg AppConfig
