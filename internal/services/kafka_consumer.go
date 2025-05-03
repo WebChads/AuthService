@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"go.uber.org/zap"
@@ -29,6 +30,7 @@ type SmsCodeMessage struct {
 }
 
 var consumerTopicName = "smstoauth"
+var compiledPhoneNumberRegex *regexp.Regexp
 
 func (kafkaConsumer *confluentKafkaConsumer) Start() {
 	if kafkaConsumer.isStarted {
@@ -62,6 +64,16 @@ func (kafkaConsumer *confluentKafkaConsumer) Start() {
 		}
 
 		kafkaConsumer.logger.Info(fmt.Sprintf("received sms code message for %s: %s", codeMessage.PhoneNumber, codeMessage.SmsCode))
+
+		isPhoneNumberCorrect := compiledPhoneNumberRegex.Match([]byte(codeMessage.PhoneNumber))
+		if !isPhoneNumberCorrect {
+			kafkaConsumer.logger.Error(fmt.Errorf("user sent invalid phone number: %s", codeMessage.PhoneNumber).Error())
+		}
+
+		if len(codeMessage.SmsCode) != 4 {
+			kafkaConsumer.logger.Error(fmt.Errorf("wrong format of sms code (must be 4 digits): %s", codeMessage.SmsCode).Error())
+		}
+
 		kafkaConsumer.smsStorage.Set(codeMessage.PhoneNumber, codeMessage.SmsCode)
 	}
 }
@@ -91,6 +103,8 @@ func InitKafkaConsumer(config KafkaConfig, logger *zap.Logger) (KafkaConsumer, e
 		singletoneKafkaConsumer.kafkaConsumer = consumer
 		singletoneKafkaConsumer.smsStorage = NewSmsStorage()
 		singletoneKafkaConsumer.logger = logger
+
+		compiledPhoneNumberRegex, _ = regexp.Compile(`^(8|\+7)(\s|\(|-)?(\d{3})(\s|\)|-)?(\d{3})(\s|-)?(\d{2})(\s|-)?(\d{2})$`)
 	}
 
 	return singletoneKafkaConsumer, nil
