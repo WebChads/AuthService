@@ -160,3 +160,65 @@ func (authRouter *AuthRouter) ValidateToken(context echo.Context) error {
 
 	return context.JSON(200, dtos.ValidateTokenResponse{IsValid: isValid})
 }
+
+// VerifySmsCode godoc
+// @Title VerifySmsCode
+// @Summary Verifying SMS code if it is what was sent to user
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param request body dtos.VerifySmsCodeRequest true "Dto with phone number and SMS code"
+// @Success 200 "Valid SMS code, giving token"
+// @Failure 400 {object} dtos.ErrorDto "Invalid phone number"
+// @Failure 400 {object} dtos.ErrorDto "Invalid SMS code format"
+// @Failure 400 {object} dtos.ErrorDto "Invalid SMS code"
+// @Failure 500 {object} dtos.ErrorDto "Happened internal error"
+// @Router /api/v1/auth/verify-sms-code [post]
+func (authRouter *AuthRouter) VerifySmsCode(context echo.Context) error {
+	request := dtos.VerifySmsCodeRequest{}
+	context.Bind(&request)
+
+	phoneNumberRegex := `^(8|\+7)(\s|\(|-)?(\d{3})(\s|\)|-)?(\d{3})(\s|-)?(\d{2})(\s|-)?(\d{2})$`
+	isPhoneNumberCorrect, err := regexp.MatchString(phoneNumberRegex, request.PhoneNumber)
+	if err != nil || !isPhoneNumberCorrect {
+		authRouter.Logger.Error(fmt.Errorf("user sent invalid phone number: %s", request.PhoneNumber).Error())
+		return context.JSON(http.StatusBadRequest, dtos.ErrorDto{ErrorMessage: "Invalid phone number"})
+	}
+
+	smsCodeRegex := `^\d{4}$`
+	isSmsCodeFormatCorrect, err := regexp.MatchString(smsCodeRegex, request.SmsCode)
+	if err != nil || !isSmsCodeFormatCorrect {
+		authRouter.Logger.Error(fmt.Errorf("user sent invalid sms code format: %s", request.SmsCode).Error())
+		return context.JSON(http.StatusBadRequest, dtos.ErrorDto{ErrorMessage: "Invalid SMS code format"})
+	}
+
+	smsCodeFromKafka, exists := authRouter.KafkaConsumer.GetSmsCode(request.PhoneNumber)
+	if !exists {
+		authRouter.Logger.Error(fmt.Errorf("for user with phone number %s wasn't produced any sms code", request.PhoneNumber).Error())
+		return context.JSON(http.StatusBadRequest, dtos.ErrorDto{ErrorMessage: "Sms code wasn't requested"})
+	}
+
+	if smsCodeFromKafka != request.SmsCode {
+		authRouter.Logger.Error(fmt.Errorf("invalid sms code for user with phone number %s. Sent: %s. Actual: %s", request.PhoneNumber, request.SmsCode, smsCodeFromKafka).Error())
+		return context.JSON(http.StatusBadRequest, dtos.ErrorDto{ErrorMessage: "Invalid SMS code"})
+	}
+
+	userModel, err := authRouter.UserRepository.Get(request.PhoneNumber)
+	if err != nil {
+		authRouter.Logger.Error(fmt.Errorf("while retrieving user from database happened error: %w", err).Error())
+		return context.JSON(http.StatusInternalServerError, dtos.ErrorDto{ErrorMessage: "Happened error while retrieving user from database"})
+	}
+
+	if userModel == nil {
+		authRouter.Logger.Error(fmt.Errorf("somehow user model is nil, was requested for phone number: %s, good luck in debugging", request.PhoneNumber).Error())
+		return context.JSON(http.StatusInternalServerError, dtos.ErrorDto{ErrorMessage: "Happened error while retrieving user from database"})
+	}
+
+	token, err := authRouter.TokenHandler.GenerateToken(userModel.Id, userModel.UserRole)
+	if err != nil {
+		authRouter.Logger.Error(fmt.Errorf("error happened while generating token for user with uuid %s: %w", userModel.Id, err).Error())
+		return context.JSON(http.StatusInternalServerError, dtos.ErrorDto{ErrorMessage: "Happened error while generating token for user"})
+	}
+
+	return context.JSON(200, dtos.TokenResponse{Token: token})
+}

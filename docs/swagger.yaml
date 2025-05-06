@@ -38,6 +38,13 @@ definitions:
       is_valid:
         type: boolean
     type: object
+  dtos.VerifySmsCodeRequest:
+    properties:
+      phone_number:
+        type: string
+      sms_code:
+        type: string
+    type: object
 info:
   contact: {}
   description: Service for handling auth, tokens and that stuff
@@ -148,6 +155,33 @@ paths:
           schema:
             $ref: '#/definitions/dtos.ValidateTokenResponse'
       summary: Checking if authentication token is valid
+      tags:
+      - Authentication
+  /api/v1/auth/verify-sms-code:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dto with phone number and SMS code
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.VerifySmsCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Valid SMS code, giving token
+        "400":
+          description: Invalid SMS code
+          schema:
+            $ref: '#/definitions/dtos.ErrorDto'
+        "500":
+          description: Happened internal error
+          schema:
+            $ref: '#/definitions/dtos.ErrorDto'
+      summary: Verifying SMS code if it is what was sent to user
       tags:
       - Authentication
 securityDefinitions:

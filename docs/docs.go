@@ -178,6 +178,48 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/auth/verify-sms-code": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Verifying SMS code if it is what was sent to user",
+                "parameters": [
+                    {
+                        "description": "Dto with phone number and SMS code",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.VerifySmsCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Valid SMS code, giving token"
+                    },
+                    "400": {
+                        "description": "Invalid SMS code",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorDto"
+                        }
+                    },
+                    "500": {
+                        "description": "Happened internal error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorDto"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -240,6 +282,17 @@ const docTemplate = `{
             "properties": {
                 "is_valid": {
                     "type": "boolean"
+                }
+            }
+        },
+        "dtos.VerifySmsCodeRequest": {
+            "type": "object",
+            "properties": {
+                "phone_number": {
+                    "type": "string"
+                },
+                "sms_code": {
+                    "type": "string"
                 }
             }
         }

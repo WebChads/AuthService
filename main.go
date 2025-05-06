@@ -65,6 +65,7 @@ func main() {
 
 	e.POST("/api/v1/auth/register", authRouter.Register)
 	e.POST("/api/v1/auth/send-sms-code", authRouter.SendSmsCode)
+	e.POST("/api/v1/auth/verify-sms-code", authRouter.VerifySmsCode)
 
 	echoSwagger.URL("http://localhost:" + config.Port)
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
