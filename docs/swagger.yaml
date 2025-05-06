@@ -6,6 +6,8 @@ definitions:
     type: object
   dtos.GenerateTokenRequest:
     properties:
+      role:
+        type: string
       user_id:
         type: string
     type: object
@@ -25,6 +27,16 @@ definitions:
     properties:
       token:
         type: string
+    type: object
+  dtos.ValidateTokenRequest:
+    properties:
+      token:
+        type: string
+    type: object
+  dtos.ValidateTokenResponse:
+    properties:
+      is_valid:
+        type: boolean
     type: object
 info:
   contact: {}
@@ -114,6 +126,28 @@ paths:
           schema:
             $ref: '#/definitions/dtos.ErrorDto'
       summary: Sending sms-code to user to phone number he entered
+      tags:
+      - Authentication
+  /api/v1/auth/validate-token:
+    post:
+      consumes:
+      - application/json
+      description: It checks if token is valid and not tried to be changed
+      parameters:
+      - description: Dto containing token (format of JWT-token)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.ValidateTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dto with field 'is_valid' that shows if token is valid
+          schema:
+            $ref: '#/definitions/dtos.ValidateTokenResponse'
+      summary: Checking if authentication token is valid
       tags:
       - Authentication
 securityDefinitions:

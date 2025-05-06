@@ -61,6 +61,8 @@ func main() {
 
 	authRouter := routers.NewAuthRouter(logger, tokenHandler, userRepository, kafkaProducer, kafkaConsumer)
 	e.POST("/api/v1/auth/generate-token", authRouter.GenerateToken)
+	e.POST("/api/v1/auth/validate-token", authRouter.ValidateToken)
+
 	e.POST("/api/v1/auth/register", authRouter.Register)
 	e.POST("/api/v1/auth/send-sms-code", authRouter.SendSmsCode)
 

@@ -144,6 +144,40 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/auth/validate-token": {
+            "post": {
+                "description": "It checks if token is valid and not tried to be changed",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Checking if authentication token is valid",
+                "parameters": [
+                    {
+                        "description": "Dto containing token (format of JWT-token)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ValidateTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dto with field 'is_valid' that shows if token is valid",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ValidateTokenResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -158,6 +192,9 @@ const docTemplate = `{
         "dtos.GenerateTokenRequest": {
             "type": "object",
             "properties": {
+                "role": {
+                    "type": "string"
+                },
                 "user_id": {
                     "type": "string"
                 }
@@ -187,6 +224,22 @@ const docTemplate = `{
             "properties": {
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "dtos.ValidateTokenRequest": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.ValidateTokenResponse": {
+            "type": "object",
+            "properties": {
+                "is_valid": {
+                    "type": "boolean"
                 }
             }
         }

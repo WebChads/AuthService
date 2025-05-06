@@ -63,7 +63,7 @@ func (authRouter *AuthRouter) GenerateToken(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, dtos.ErrorDto{ErrorMessage: "Invalid UserId format (must be UUID)"})
 	}
 
-	token, err := authRouter.TokenHandler.GenerateToken(parsedUuid)
+	token, err := authRouter.TokenHandler.GenerateToken(parsedUuid, tokenRequest.Role)
 	if err != nil {
 		authRouter.Logger.Error(err.Error())
 		return context.JSON(http.StatusInternalServerError, dtos.ErrorDto{ErrorMessage: "Happened internal error"})
@@ -136,4 +136,27 @@ func (authRouter *AuthRouter) SendSmsCode(context echo.Context) error {
 	}
 
 	return context.NoContent(200)
+}
+
+// ValidateToken godoc
+// @Title ValidateToken
+// @Summary Checking if authentication token is valid
+// @Description It checks if token is valid and not tried to be changed
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param request body dtos.ValidateTokenRequest true "Dto containing token (format of JWT-token)"
+// @Success 200 {object} dtos.ValidateTokenResponse "Dto with field 'is_valid' that shows if token is valid"
+// @Router /api/v1/auth/validate-token [post]
+func (authRouter *AuthRouter) ValidateToken(context echo.Context) error {
+	tokenRequest := dtos.ValidateTokenRequest{}
+	context.Bind(&tokenRequest)
+
+	isValid, err := authRouter.TokenHandler.ValidateToken(tokenRequest.Token)
+
+	if err != nil {
+		isValid = false
+	}
+
+	return context.JSON(200, dtos.ValidateTokenResponse{IsValid: isValid})
 }

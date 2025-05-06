@@ -9,7 +9,7 @@ import (
 )
 
 type TokenHandler interface {
-	GenerateToken(userID uuid.UUID) (string, error)
+	GenerateToken(userID uuid.UUID, userRole string) (string, error)
 	ValidateToken(token string) (bool, error)
 }
 
@@ -22,10 +22,11 @@ func InitTokenHandler(secretKey string) (*JwtTokenHandler, error) {
 	return &tokenHandler, nil
 }
 
-func (tokenHandler *JwtTokenHandler) GenerateToken(userID uuid.UUID) (string, error) {
+func (tokenHandler *JwtTokenHandler) GenerateToken(userID uuid.UUID, userRole string) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": userID,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Срок действия — 24 часа
+		"user_id":   userID,
+		"user_role": userRole,
+		"exp":       time.Now().Add(time.Hour * 24).Unix(), // Срок действия — 24 часа
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
