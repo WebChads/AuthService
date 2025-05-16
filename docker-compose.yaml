@@ -8,11 +8,11 @@ services:
       PORT: "8081"
       SECRET_KEY: "your_production_secret_key"
       IS_DEVELOPMENT: "false"
-      DATABASE__HOST: "postgres:5432"
-      DATABASE__DB_NAME: "auth_service_db"
-      DATABASE__USER: "postgres"
-      DATABASE__PASSWORD: "postgres"
-      KAFKA__URL: "kafka:29092"
+      DATABASE_HOST: "postgres:5432"
+      DATABASE_DB_NAME: "auth_service_db"
+      DATABASE_USER: "postgres"
+      DATABASE_PASSWORD: "postgres"
+      KAFKA_URL: "kafka:29092"
     depends_on:
       postgres:
         condition: service_healthy

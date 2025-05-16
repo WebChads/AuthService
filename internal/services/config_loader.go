@@ -18,14 +18,14 @@ type AppConfig struct {
 }
 
 type DatabaseConfig struct {
-	Host     string `json:"host" env:"DATABASE__HOST"`
-	DbName   string `json:"db_name" env:"DATABASE__DB_NAME"`
-	User     string `json:"user" env:"DATABASE__USER"`
-	Password string `json:"password" env:"DATABASE__PASSWORD"`
+	Host     string `json:"host" env:"DATABASE_HOST"`
+	DbName   string `json:"db_name" env:"DATABASE_DB_NAME"`
+	User     string `json:"user" env:"DATABASE_USER"`
+	Password string `json:"password" env:"DATABASE_PASSWORD"`
 }
 
 type KafkaConfig struct {
-	Url string `json:"url" env:"KAFKA__URL"`
+	Url string `json:"url" env:"KAFKA_URL"`
 }
 
 var cfg AppConfig
