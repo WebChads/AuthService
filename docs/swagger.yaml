@@ -184,6 +184,23 @@ paths:
       summary: Verifying SMS code if it is what was sent to user
       tags:
       - Authentication
+  /healthz:
+    get:
+      consumes:
+      - application/json
+      description: Returns 200 if the service is healthy and ready to accept traffic
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Service is healthy
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check endpoint for Kubernetes
+      tags:
+      - Infrastructure
 securityDefinitions:
   JwtBearer:
     in: header

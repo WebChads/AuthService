@@ -77,3 +77,18 @@ API использует JWT для аутентификации. Токен д�
 ```
 Authorization: Bearer <token>
 ```
+
+## Полезные команды
+
+Для установки echo-swagger
+```
+go install github.com/swaggo/swag/cmd/swag@latest
+go get -u github.com/swaggo/echo-swagger
+swag init -output docs --parseInternal --parseDependency
+```
+
+
+Для перегенерации swagger docs (из корня проекта):
+```
+swag init -output docs --parseInternal --parseDependency
+```

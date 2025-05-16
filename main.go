@@ -59,6 +59,7 @@ func main() {
 
 	e := echo.New()
 
+	// Auth router
 	authRouter := routers.NewAuthRouter(logger, tokenHandler, userRepository, kafkaProducer, kafkaConsumer)
 	e.POST("/api/v1/auth/generate-token", authRouter.GenerateToken)
 	e.POST("/api/v1/auth/validate-token", authRouter.ValidateToken)
@@ -67,6 +68,11 @@ func main() {
 	e.POST("/api/v1/auth/send-sms-code", authRouter.SendSmsCode)
 	e.POST("/api/v1/auth/verify-sms-code", authRouter.VerifySmsCode)
 
+	// Health router
+	healthRouter := routers.NewHealthRouter(logger)
+	e.GET("/healthz", healthRouter.HealthCheck)
+
+	// Swagger
 	echoSwagger.URL("http://localhost:" + config.Port)
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
