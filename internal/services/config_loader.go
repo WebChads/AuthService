@@ -31,29 +31,31 @@ type KafkaConfig struct {
 var cfg AppConfig
 var cachedProjectRootPath string
 
+// Initialize config - from first from config file, then from env vars (overriding). So you can choose any variant you want (even mixing)
 func InitializeConfig() (*AppConfig, error) {
 	workingDirectory, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
 
+	// Config from appsetting.json (variant through config file)
 	projectRootPath, err := findProjectRoot(workingDirectory)
 	if err != nil {
-		return nil, err
+		fmt.Println("didn't found project root (it depends on go.mod file) - if you're using env variables - skip this message")
+	} else {
+		path := projectRootPath + "/configs/appsettings.json"
+
+		// Reading config from file
+		err = cleanenv.ReadConfig(path, &cfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read config file: %w", err)
+		}
 	}
 
-	path := projectRootPath + "/configs/appsettings.json"
-
-	// Reading config from file
-	err = cleanenv.ReadConfig(path, &cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
-	}
-
-	// Then overriding with environment variables
+	// Config from environment variables (variant through env)
 	err = cleanenv.ReadEnv(&cfg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read env vars: %w", err)
+		fmt.Println("can't read env variables - if you're using config file - skip this message")
 	}
 
 	// Validate required fields
