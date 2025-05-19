@@ -9,7 +9,7 @@ env:
   # Настройки Yandex Container Registry
   YC_REGISTRY: cr.yandex
   YC_REPOSITORY: crpo7i7jtgfkus1pmda2
-  IMAGE_NAME: ${{ env.YC_REGISTRY }}/${{ env.YC_REPOSITORY }}/auth-service:${{ github.sha }}
+  IMAGE_NAME: ${{ YC_REGISTRY }}/${{ YC_REPOSITORY }}/auth-service:${{ github.sha }}
 
   # Настройки Kubernetes
   KUBE_NAMESPACE: default
