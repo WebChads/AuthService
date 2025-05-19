@@ -1,0 +1,73 @@
+name: Deploy auth-service to Yandex Kubernetes
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  # Настройки Yandex Container Registry
+  YC_REGISTRY: cr.yandex
+  YC_REPOSITORY: crpo7i7jtgfkus1pmda2
+  IMAGE_NAME: ${{ env.YC_REGISTRY }}/${{ env.YC_REPOSITORY }}/auth-service:${{ github.sha }}
+
+  # Настройки Kubernetes
+  KUBE_NAMESPACE: default
+  SERVICE_NAME: auth-service
+
+jobs:
+  setup-cluster:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl access
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > ~/.kube/config
+          kubectl cluster-info
+
+  build-and-push:
+    needs: setup-cluster
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Yandex Container Registry
+        run: |
+          echo "${{ secrets.YC_DOCKER_PASSWORD }}" | docker login \
+            --username json_key \
+            --password-stdin ${{ env.YC_REGISTRY }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ env.IMAGE_NAME }} .
+          docker push ${{ env.IMAGE_NAME }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl access
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > ~/.kube/config
+          kubectl cluster-info
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Deploy using Helm (alternative)
+        run: |
+          helm upgrade --install \
+            ${{ env.SERVICE_NAME }} \
+            ./deploy/helm \
+            --set image.repository=${{ env.YC_REGISTRY }}/${{ env.YC_REPOSITORY }}/auth-service \
+            --set image.tag=${{ github.sha }} \
+            --namespace ${{ env.KUBE_NAMESPACE }} \
+            --atomic --wait
