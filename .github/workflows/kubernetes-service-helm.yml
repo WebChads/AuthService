@@ -62,11 +62,11 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v3
 
-      - name: Deploy using Helm (alternative)
+      - name: Deploy using Helm
         run: |
           helm upgrade --install \
             ${{ env.SERVICE_NAME }} \
-            ./deploy/helm \
+            ./deploy/helm/auth-service \
             --set image.repository=${{ env.YC_REGISTRY }}/${{ env.YC_REPOSITORY }}/auth-service \
             --set image.tag=${{ github.sha }} \
             --namespace ${{ env.KUBE_NAMESPACE }} \
