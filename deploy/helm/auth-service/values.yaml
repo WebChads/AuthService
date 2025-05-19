@@ -1,0 +1,30 @@
+deployment:
+  replicas: 3
+
+  registryAddress: localhost:32000
+  imageName: auth-service
+  imageVersion: latest
+
+  containerPort: 8081
+
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"
+
+service:
+  type: NodePort
+  innerPort: 8081
+  nodePort: 30000
+
+secret:
+  PORT: "8081"
+  SECRET_KEY: "mock_secret_key"
+  IS_DEVELOPMENT: "false"
+  DATABASE_HOST: "postgres.shared-services.svc.cluster.local:5432"
+  DATABASE_DB_NAME: "auth_service_db"
+  DATABASE_USER: "postgres"
+  DATABASE_PASSWORD: "postgres"
+  KAFKA_URL: "kafka.shared-services.svc.cluster.local:29092"

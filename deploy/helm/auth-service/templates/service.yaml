@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: auth-service
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.service.innerPort }}
+    targetPort: http
+    nodePort: {{ .Values.service.nodePort }} 
+    protocol: TCP
+  selector:
+    app: auth-service
