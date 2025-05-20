@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"log/slog"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -63,6 +64,7 @@ func InitializeConfig() (*AppConfig, error) {
 		return nil, err
 	}
 
+	slog.Info(cfg)
 	return &cfg, nil
 }
 
