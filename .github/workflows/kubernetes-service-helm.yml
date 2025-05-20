@@ -37,7 +37,7 @@ jobs:
 
       - name: Login to Yandex Container Registry
         run: |
-          echo ${{ secrets.YC_OAUTH_TOKEN_ENCODED }}| base64 -d |docker login \
+          echo "${{ secrets.YC_OAUTH_TOKEN_ENCODED }}"| base64 -d |docker login \
             --username oauth \
             --password-stdin ${{ env.YC_REGISTRY }}
 
@@ -73,10 +73,10 @@ jobs:
             ./deploy/helm/auth-service \
             --set image.repository=${{ env.YC_REGISTRY }}/${{ env.YC_REPOSITORY }}/auth-service \
             --set image.tag=latest \
-            --set secret.DATABASE_HOST=${{ secrets.DATABASE_HOST }} \
-            --set secret.DATABASE_DB_NAME=${{ secrets.DATABASE_DB_NAME }} \
-            --set secret.DATABASE_USER=${{ secrets.DATABASE_USER }} \
-            --set secret.DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
+            --set secret.DATABASE_HOST="${{ secrets.DATABASE_HOST }}" \
+            --set secret.DATABASE_DB_NAME="${{ secrets.DATABASE_DB_NAME }}" \
+            --set secret.DATABASE_USER="${{ secrets.DATABASE_USER }}" \
+            --set secret.DATABASE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
             --namespace ${{ env.KUBE_NAMESPACE }} \
             --atomic=false \
             --timeout 10m
