@@ -11,7 +11,7 @@ env:
   # IMAGE_NAME: cr.yandex/crpo7i7jtgfkus1pmda2/auth-service:${{ github.sha }}
   IMAGE_VERSION: latest
   # IMAGE_NAME: ${{ .Values.deployment.registryAddress }}/${{ .Values.deployment.imageName }}:${{ .Values.deployment.imageVersion }}
-  IMAGE_NAME: localhost:32000/auth-service
+  IMAGE_NAME: localhost/auth-service
 
   # Настройки Kubernetes
   KUBE_NAMESPACE: default
