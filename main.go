@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	_ "github.com/WebChads/AuthService/docs"
-	"github.com/WebChads/AuthService/internal/database"
-	"github.com/WebChads/AuthService/internal/database/repositories"
 	"github.com/WebChads/AuthService/internal/routers"
 	"github.com/WebChads/AuthService/internal/services"
 	"github.com/labstack/echo/v4"
