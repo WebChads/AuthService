@@ -45,7 +45,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}.
+          docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }} .
           docker push ${{ env.IMAGE_NAME }}
 
   deploy:
