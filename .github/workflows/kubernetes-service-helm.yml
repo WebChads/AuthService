@@ -62,8 +62,8 @@ jobs:
       - name: Check cluster resources
         run: |
           kubectl get nodes
-          kubectl top nodes
-          kubectl describe nodes
+          # kubectl top nodes
+          # kubectl describe nodes
 
       - name: Install Helm
         uses: azure/setup-helm@v3
@@ -78,7 +78,6 @@ jobs:
             --namespace ${{ env.KUBE_NAMESPACE }} \
             --atomic=false \
             --timeout 10m
-            - name: Deploy using Helm
   
       - name: Check pod status
         run: |
