@@ -9,9 +9,9 @@ env:
   # Настройки Yandex Container Registry
   # YC_REPOSITORY: crpo7i7jtgfkus1pmda2
   # IMAGE_NAME: cr.yandex/crpo7i7jtgfkus1pmda2/auth-service:${{ github.sha }}
-  IMAGE_VERSION: latest
+  # IMAGE_VERSION: latest
   # IMAGE_NAME: ${{ .Values.deployment.registryAddress }}/${{ .Values.deployment.imageName }}:${{ .Values.deployment.imageVersion }}
-  IMAGE_NAME: localhost:8081/auth-service
+  IMAGE_NAME: localhost:8081/auth-service:latest
 
   # Настройки Kubernetes
   KUBE_NAMESPACE: default
@@ -45,7 +45,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }} .
+          docker build -t ${{ env.IMAGE_NAME }} .
           docker push ${{ env.IMAGE_NAME }}
 
   deploy:
