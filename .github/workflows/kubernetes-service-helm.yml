@@ -59,6 +59,12 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" | base64 --decode > ~/.kube/config
           kubectl cluster-info
 
+      - name: Check cluster resources
+        run: |
+          kubectl get nodes
+          kubectl top nodes
+          kubectl describe nodes
+
       - name: Install Helm
         uses: azure/setup-helm@v3
 
@@ -70,4 +76,21 @@ jobs:
             --set image.repository=${{ env.YC_REGISTRY }}/${{ env.YC_REPOSITORY }}/auth-service \
             --set image.tag=${{ github.sha }} \
             --namespace ${{ env.KUBE_NAMESPACE }} \
-            --atomic --wait
+            --atomic=false \
+            --timeout 10m
+            - name: Deploy using Helm
+  
+      - name: Check pod status
+        run: |
+          kubectl get pods -n ${{ env.KUBE_NAMESPACE }}
+          kubectl describe pod -l app=${{ env.SERVICE_NAME }} -n ${{ env.KUBE_NAMESPACE }}
+          kubectl logs -l app=${{ env.SERVICE_NAME }} -n ${{ env.KUBE_NAMESPACE }}
+            
+            # run: |
+            #   helm upgrade --install \
+            #     ${{ env.SERVICE_NAME }} \
+            #     ./deploy/helm/auth-service \
+            #     --set image.repository=${{ env.YC_REGISTRY }}/${{ env.YC_REPOSITORY }}/auth-service \
+            #     --set image.tag=${{ github.sha }} \
+            #     --namespace ${{ env.KUBE_NAMESPACE }} \
+            #     --atomic --wait
