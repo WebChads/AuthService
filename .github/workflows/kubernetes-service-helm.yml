@@ -72,7 +72,7 @@ jobs:
           helm upgrade --install \
             ${{ env.SERVICE_NAME }} \
             ./deploy/helm/auth-service \
-            --set image.repository=${{ IMAGE_NAME }} \
+            --set image.repository=${{ env.IMAGE_NAME }} \
             # --set image.tag=${{ github.sha }} \
             --namespace ${{ env.KUBE_NAMESPACE }} \
             --atomic=false \
