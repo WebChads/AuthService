@@ -40,7 +40,6 @@ func main() {
 	dbContext, err := database.InitDatabase(&config.DbSettings)
 	if err != nil {
 		logger.Error(fmt.Sprintf("%v", config))
-		logger.Error(config)
 		logger.Error("Unable to init database: " + err.Error())
 		return
 	}
@@ -49,7 +48,6 @@ func main() {
 
 	kafkaProducer, err := services.NewKafkaProducer(config.KafkaConfig)
 	if err != nil {
-		logger
 		logger.Error("Unable to init kafka: " + err.Error())
 		return
 	}
