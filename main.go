@@ -37,14 +37,14 @@ func main() {
 		return
 	}
 
-	dbContext, err := database.InitDatabase(&config.DbSettings)
-	if err != nil {
-		logger.Error(fmt.Sprintf("%v", config))
-		logger.Error("Unable to init database: " + err.Error())
-		return
-	}
+	// dbContext, err := database.InitDatabase(&config.DbSettings)
+	// if err != nil {
+	// 	logger.Error(fmt.Sprintf("%v", config))
+	// 	logger.Error("Unable to init database: " + err.Error())
+	// 	return
+	// }
 
-	userRepository := repositories.NewUserRepository(dbContext.Connection)
+	// userRepository := repositories.NewUserRepository(dbContext.Connection)
 
 	kafkaProducer, err := services.NewKafkaProducer(config.KafkaConfig)
 	if err != nil {
@@ -61,7 +61,7 @@ func main() {
 	e := echo.New()
 
 	// Auth router
-	authRouter := routers.NewAuthRouter(logger, tokenHandler, userRepository, kafkaProducer, kafkaConsumer)
+	authRouter := routers.NewAuthRouter(logger, tokenHandler, nil, kafkaProducer, kafkaConsumer)
 	e.POST("/api/v1/auth/generate-token", authRouter.GenerateToken)
 	e.POST("/api/v1/auth/validate-token", authRouter.ValidateToken)
 
