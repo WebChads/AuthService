@@ -9,8 +9,8 @@ env:
   # Настройки Yandex Container Registry
   # YC_REPOSITORY: crpo7i7jtgfkus1pmda2
   # IMAGE_NAME: cr.yandex/crpo7i7jtgfkus1pmda2/auth-service:${{ github.sha }}
-  # IMAGE_NAME: ${{ .Values.deployment.registryAddress }}/${{ .Values.deployment.imageName }}:${{ .Values.deployment.imageVersion }}
-  IMAGE_NAME: localhost:32000/auth-service:latest
+  IMAGE_NAME: ${{ .Values.deployment.registryAddress }}/${{ .Values.deployment.imageName }}:${{ .Values.deployment.imageVersion }}
+  # IMAGE_NAME: localhost:32000/auth-service:latest
 
   # Настройки Kubernetes
   KUBE_NAMESPACE: default
