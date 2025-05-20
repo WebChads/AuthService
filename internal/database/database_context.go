@@ -19,32 +19,32 @@ func InitDatabase(databaseConfig *services.DatabaseConfig) (*DatabaseContext, er
 
 	connection, err := sql.Open("postgres", connectionString)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("conn 1: %w", err)
 	}
 
 	doesDbExists, err := checkIfDbExists(connection, databaseConfig.DbName)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("conn doesDbExists: %w", err)
 	}
 
 	if !doesDbExists {
 		err = createDatabase(connection, databaseConfig.DbName)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("conn createDatabase: %w", err)
 		}
 	}
 
 	connectionString = fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", databaseConfig.User, databaseConfig.Password, databaseConfig.Host, databaseConfig.DbName)
 	connection, err = sql.Open("postgres", connectionString)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("conn 2: %w", err)
 	}
 
 	databaseContextObject := &DatabaseContext{Connection: connection}
 
 	err = databaseContextObject.migrateTables()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("migrate: %w", err)
 	}
 
 	return databaseContextObject, nil
