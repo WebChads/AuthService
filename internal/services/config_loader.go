@@ -64,7 +64,7 @@ func InitializeConfig() (*AppConfig, error) {
 		return nil, err
 	}
 
-	slog.Info(cfg)
+	slog.Info(fmt.Sprintf("%v", cfg))
 	return &cfg, nil
 }
 
