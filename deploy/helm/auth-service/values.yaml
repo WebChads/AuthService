@@ -1,7 +1,7 @@
 deployment:
   replicas: 3
 
-  registryAddress: cr.yandex/crpo7i7jtgfkus1pmda2/auth-service
+  registryAddress: cr.yandex/crpo7i7jtgfkus1pmda2
   imageName: auth-service
   imageVersion: latest
 
