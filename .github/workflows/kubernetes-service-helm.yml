@@ -7,11 +7,9 @@ on:
 
 env:
   # Настройки Yandex Container Registry
-  # YC_REPOSITORY: crpo7i7jtgfkus1pmda2
-  # IMAGE_NAME: cr.yandex/crpo7i7jtgfkus1pmda2/auth-service:${{ github.sha }}
-  # IMAGE_VERSION: latest
-  # IMAGE_NAME: ${{ .Values.deployment.registryAddress }}/${{ .Values.deployment.imageName }}:${{ .Values.deployment.imageVersion }}
-  IMAGE_NAME: localhost:8081/auth-service:latest
+  YC_REGISTRY: cr.yandex
+  YC_REPOSITORY: crpo7i7jtgfkus1pmda2
+  IMAGE_NAME: cr.yandex/crpo7i7jtgfkus1pmda2/auth-service:${{ github.sha }}
 
   # Настройки Kubernetes
   KUBE_NAMESPACE: default
@@ -37,11 +35,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # - name: Login to Yandex Container Registry
-      #   run: |
-      #     echo ${{ secrets.YC_OAUTH_TOKEN_ENCODED }}| base64 -d |docker login \
-      #       --username oauth \
-      #       --password-stdin ${{ env.YC_REGISTRY }}
+      - name: Login to Yandex Container Registry
+        run: |
+          echo ${{ secrets.YC_OAUTH_TOKEN_ENCODED }}| base64 -d |docker login \
+            --username oauth \
+            --password-stdin ${{ env.YC_REGISTRY }}
 
       - name: Build and push Docker image
         run: |
@@ -73,8 +71,8 @@ jobs:
           helm upgrade --install \
             ${{ env.SERVICE_NAME }} \
             ./deploy/helm/auth-service \
-            --set image.repository=${{ env.IMAGE_NAME }} \
-            # --set image.tag=${{ github.sha }} \
+            --set image.repository=${{ env.YC_REGISTRY }}/${{ env.YC_REPOSITORY }}/auth-service \
+            --set image.tag=${{ github.sha }} \
             --namespace ${{ env.KUBE_NAMESPACE }} \
             --atomic=false \
             --timeout 10m
