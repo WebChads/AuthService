@@ -63,7 +63,7 @@ func InitializeConfig() (*AppConfig, error) {
 		return nil, err
 	}
 
-	fmt.Sprintf("%v\n", cfg)
+	fmt.Printf("%v\n", cfg)
 	return &cfg, nil
 }
 
