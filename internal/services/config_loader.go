@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"log/slog"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
