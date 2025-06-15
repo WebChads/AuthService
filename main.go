@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	_ "github.com/WebChads/AuthService/docs"
+	"github.com/WebChads/AuthService/internal/database"
+	"github.com/WebChads/AuthService/internal/database/repositories"
 	"github.com/WebChads/AuthService/internal/routers"
 	"github.com/WebChads/AuthService/internal/services"
 	"github.com/labstack/echo/v4"
@@ -35,14 +37,14 @@ func main() {
 		return
 	}
 
-	// dbContext, err := database.InitDatabase(&config.DbSettings)
-	// if err != nil {
-	// 	logger.Error(fmt.Sprintf("%v", config))
-	// 	logger.Error("Unable to init database: " + err.Error())
-	// 	return
-	// }
+	dbContext, err := database.InitDatabase(&config.DbSettings)
+	if err != nil {
+		logger.Error(fmt.Sprintf("%v", config))
+		logger.Error("Unable to init database: " + err.Error())
+		return
+	}
 
-	// userRepository := repositories.NewUserRepository(dbContext.Connection)
+	userRepository := repositories.NewUserRepository(dbContext.Connection)
 
 	kafkaProducer, err := services.NewKafkaProducer(config.KafkaConfig)
 	if err != nil {
@@ -59,7 +61,7 @@ func main() {
 	e := echo.New()
 
 	// Auth router
-	authRouter := routers.NewAuthRouter(logger, tokenHandler, nil, kafkaProducer, kafkaConsumer)
+	authRouter := routers.NewAuthRouter(logger, tokenHandler, userRepository, kafkaProducer, kafkaConsumer)
 	e.POST("/api/v1/auth/generate-token", authRouter.GenerateToken)
 	e.POST("/api/v1/auth/validate-token", authRouter.ValidateToken)
 
