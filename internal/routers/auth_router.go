@@ -152,6 +152,8 @@ func (authRouter *AuthRouter) ValidateToken(context echo.Context) error {
 	tokenRequest := dtos.ValidateTokenRequest{}
 	context.Bind(&tokenRequest)
 
+	authRouter.Logger.Info(fmt.Sprintf("token sent in validate token: %s", tokenRequest.Token))
+
 	isValid, err := authRouter.TokenHandler.ValidateToken(tokenRequest.Token)
 
 	if err != nil {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	_ "github.com/WebChads/AuthService/docs"
 	"github.com/WebChads/AuthService/internal/database"
@@ -9,6 +10,7 @@ import (
 	"github.com/WebChads/AuthService/internal/routers"
 	"github.com/WebChads/AuthService/internal/services"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
@@ -76,6 +78,12 @@ func main() {
 	// Swagger
 	echoSwagger.URL("http://localhost:" + config.Port)
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
+
+	// CORS handling
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodPatch},
+	}))
 
 	e.Logger.Fatal(e.Start(":" + config.Port))
 }
