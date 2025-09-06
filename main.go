@@ -48,7 +48,7 @@ func main() {
 
 	userRepository := repositories.NewUserRepository(dbContext.Connection)
 
-	kafkaProducer, err := services.NewKafkaProducer(config.KafkaConfig)
+	kafkaProducer, err := services.NewKafkaProducer(config.KafkaConfig, logger)
 	if err != nil {
 		logger.Error("Unable to init kafka: " + err.Error())
 		return
