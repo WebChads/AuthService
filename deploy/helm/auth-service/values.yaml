@@ -1,7 +1,7 @@
 deployment:
   replicas: 3
 
-  registryAddress: cr.yandex/crpo7i7jtgfkus1pmda2
+  registryAddress: localhost:32000
   imageName: auth-service
   imageVersion: latest
 
@@ -23,7 +23,7 @@ secret:
   PORT: "8081"
   SECRET_KEY: "mock_secret_key"
   IS_DEVELOPMENT: "false"
-  DATABASE_HOST: "postgresql.shared-services.svc.cluster.local:5432"
+  DATABASE_HOST: "postgresql-service.shared-services.svc.cluster.local:5432"
   DATABASE_DB_NAME: "auth_service_db"
   DATABASE_USER: "postgres"
   DATABASE_PASSWORD: "postgres"
